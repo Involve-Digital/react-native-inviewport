@@ -1,81 +1,89 @@
 'use strict';
 
-import React, { Component } from 'react'
-import { View, NativeMethodsMixin, Dimensions } from 'react-native'
+var React = require('react');
+var ReactNative = require('react-native');
+var window = ReactNative.Dimensions.get('window');
+var {View} = ReactNative;
+import { PropTypes } from 'prop-types';
+var createReactClass = require('create-react-class');
 
-exports.InViewPort = class extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { rectTop: 0, rectBottom: 0 }
-  }
+module.exports = createReactClass({
+  displayName: 'InViewPort',
+  propTypes: {
+    onChange: PropTypes.func.isRequired,
+    active: PropTypes.bool,
+    delay: PropTypes.number 
+  },
 
-  componentDidMount() {
-    if (!this.props.disabled) {
-      this.startWatching()
+  getDefaultProps: function () {
+    return {
+      active: true,
+      delay: 100
+    };
+  },
+
+  getInitialState: function(){
+    return {
+      rectTop: 0,
+      rectBottom: 0
     }
-  }
+  },
+  componentDidMount: function () {
+    if (this.props.active) {
+      this.startWatching();
+    }
+  },
 
-  componentWillUnmount() {
-    this.stopWatching()
-  }
+  componentWillUnmount: function () {
+    this.stopWatching();
+  },
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.disabled) {
-      this.stopWatching()
+  componentWillReceiveProps: function (nextProps) {
+    if (nextProps.active) {
+      this.lastValue = null;
+      this.startWatching();
     } else {
-      this.lastValue = null
-      this.startWatching()
+      this.stopWatching();
     }
-  }
+  },
 
-  startWatching() {
-    if (this.interval) {
-      return
-    }
-    this.interval = setInterval(() => {
-      if (!this.myview) {
-        return
-      }
-      this.myview.measure((x, y, width, height, pageX, pageY) => {
-        this.setState({
-          rectTop: pageY,
-          rectBottom: pageY + height,
-          rectWidth: pageX + width
-        })
+  startWatching: function () {
+    if (this.interval) { return; }
+    this.interval = setInterval(this.check, this.props.delay);
+  },
+
+  stopWatching: function () {
+    this.interval = clearInterval(this.interval);
+  },
+  /**
+   * Check if the element is within the visible viewport
+   */
+  check: function () {
+    var el = this.refs.myview;
+    var rect = el.measure((ox, oy, width, height, pageX, pageY) => {
+      this.setState({
+        rectTop: pageY,
+        rectBottom: pageY + height,
+        rectWidth: pageX + width,
       })
-      this.isInViewPort()
-    }, this.props.delay || 100)
-  }
+    });
+    var isVisible = (
+      this.state.rectBottom != 0 && this.state.rectTop >= 0 && this.state.rectBottom <= window.height &&
+      this.state.rectWidth > 0 && this.state.rectWidth <= window.width
+    );
 
-  stopWatching() {
-    this.interval = clearInterval(this.interval)
-  }
-
-  isInViewPort() {
-    const window = Dimensions.get('window')
-    const isVisible =
-      this.state.rectBottom != 0 &&
-      this.state.rectTop >= 0 &&
-      this.state.rectBottom <= window.height &&
-      this.state.rectWidth > 0 &&
-      this.state.rectWidth <= window.width
+    // notify the parent when the value changes
     if (this.lastValue !== isVisible) {
-      this.lastValue = isVisible
-      this.props.onChange(isVisible)
+      this.lastValue = isVisible;
+      this.props.onChange(isVisible);
     }
-  }
+  },
 
-  render() {
+  render: function () {
     return (
-      <View
-        collapsable={false}
-        ref={component => {
-          this.myview = component
-        }}
-        {...this.props}
-      >
+      <View ref='myview' {...this.props}>
         {this.props.children}
       </View>
-    )
+    );
   }
-}
+});
