@@ -12,7 +12,7 @@ module.exports = createReactClass({
   propTypes: {
     onChange: PropTypes.func.isRequired,
     active: PropTypes.bool,
-    delay: PropTypes.number 
+    delay: PropTypes.number
   },
 
   getDefaultProps: function () {

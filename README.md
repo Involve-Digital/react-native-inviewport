@@ -4,11 +4,7 @@ I based this off: https://github.com/joshwnj/react-visibility-sensor with some s
 
 <H2>Install</H2>
 
-```sudo npm react-native-inviewport@latest --save```
-
-<H2>Example Usage</H2>
-
-Assuming you already setup your component, here's a quick example.
+```npm install https://github.com/Involve-Digital/react-native-inviewport.git#react-native-compability --save```
 
 ```
 checkVisible = (isVisible) => {
