@@ -81,7 +81,7 @@ module.exports = createReactClass({
 
   render: function () {
     return (
-      <View ref='myview' {...this.props}>
+      <View ref='myview' collapsable={false} {...this.props}>
         {this.props.children}
       </View>
     );
